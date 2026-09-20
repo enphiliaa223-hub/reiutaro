@@ -1,26 +1,196 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ==========================================================================
+   REIUTAROU — Design Tokens (Tailwind v4 @theme)
+   Palet: gold/yellow + ink(black) + paper(off-white) + night(violet accent)
+   ========================================================================== */
+@theme {
+  /* Gold — brand accent utama */
+  --color-gold-50: #fefcec;
+  --color-gold-100: #fcf8c8;
+  --color-gold-200: #f8ee94;
+  --color-gold-300: #f5df55;
+  --color-gold-400: #ffd400;
+  --color-gold-500: #e8b800;
+  --color-gold-600: #c79200;
+  --color-gold-700: #9a6e00;
+  --color-gold-800: #6e4e00;
+  --color-gold-900: #4a3500;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Ink — neutrals hitam/abu */
+  --color-ink-50: #f6f5f3;
+  --color-ink-100: #eceae7;
+  --color-ink-200: #d7d4cf;
+  --color-ink-300: #b7b3ac;
+  --color-ink-400: #938e85;
+  --color-ink-500: #6e6a62;
+  --color-ink-600: #4d4a44;
+  --color-ink-700: #33312c;
+  --color-ink-800: #1e1d1a;
+  --color-ink-900: #14130f;
+  --color-ink-950: #0b0b09;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* Paper — off-white hangat */
+  --color-paper-50: #f5f2e9;
+  --color-paper-100: #ece8dc;
+  --color-paper-200: #dfd9c9;
+  --color-paper-300: #c9c1ac;
+
+  /* Night — dark purple/blue accent */
+  --color-night-700: #373146;
+  --color-night-800: #2a2538;
+  --color-night-900: #1d1a2b;
+  --color-night-950: #13101e;
+
+  /* Neon violet — accent gradasi */
+  --color-neon-300: #c4b5fd;
+  --color-neon-400: #a78bfa;
+  --color-neon-500: #8b5cf6;
+  --color-neon-600: #7c3aed;
+
+  /* Semantics */
+  --color-success: #34d399;
+  --color-danger: #f87171;
+  --color-warning: #fbbf24;
+  --color-info: #38bdf8;
+
+  /* Fonts (di-set via next/font di app/layout.tsx) */
+  --font-sans: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-archivo-black), var(--font-space-grotesk), ui-sans-serif, sans-serif;
+
+  /* Type scale */
+  --text-display: clamp(3.25rem, 9vw, 8rem);
+  --text-display--line-height: 0.92;
+  --text-display--letter-spacing: -0.02em;
+  --text-hero: clamp(2.4rem, 6vw, 5rem);
+  --text-hero--line-height: 1;
+  --text-hero--letter-spacing: -0.02em;
+  --text-h1: clamp(1.9rem, 4vw, 3.25rem);
+  --text-h1--line-height: 1.05;
+  --text-h1--letter-spacing: -0.015em;
+  --text-h2: clamp(1.5rem, 3vw, 2.25rem);
+  --text-h2--line-height: 1.1;
+  --text-h3: clamp(1.2rem, 2vw, 1.5rem);
+  --text-h3--line-height: 1.2;
+  --text-kicker: 0.72rem;
+  --text-kicker--line-height: 1;
+  --text-kicker--letter-spacing: 0.22em;
+  --text-kicker--font-weight: 700;
+
+  /* Shadows */
+  --shadow-raise: 0 10px 30px -10px rgb(0 0 0 / 0.5);
+  --shadow-pop: 0 18px 45px -12px rgb(0 0 0 / 0.6);
+  --shadow-gold: 0 0 0 1px rgb(255 212 0 / 0.35), 0 0 32px rgb(255 212 0 / 0.22);
+
+  /* Radius */
+  --radius-4xl: 2rem;
+
+  /* Motion durations (dipakai komponen/Framer) */
+  --duration-fast: 120ms;
+  --duration-base: 250ms;
+  --duration-slow: 500ms;
+  --duration-slower: 800ms;
+
+  /* Keyframe animations → utilities: animate-marquee, animate-float, dst */
+  --animate-marquee: marquee 22s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-shine: shine 2.6s ease-in-out infinite;
+  --animate-pulse-ring: pulse-ring 2.4s ease-out infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  @keyframes shine {
+    0% {
+      transform: translateX(-120%) skewX(-18deg);
+    }
+    60%,
+    100% {
+      transform: translateX(220%) skewX(-18deg);
+    }
+  }
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(0.9);
+      opacity: 0.8;
+    }
+    100% {
+      transform: scale(1.6);
+      opacity: 0;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  * {
+    border-color: var(--color-ink-800);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    background-color: var(--color-ink-950);
+    color: var(--color-paper-50);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background-color: var(--color-gold-400);
+    color: var(--color-ink-950);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gold-400);
+    outline-offset: 2px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-ink-950);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-ink-700);
+    border-radius: 999px;
+    border: 2px solid var(--color-ink-950);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-gold-600);
+  }
 }

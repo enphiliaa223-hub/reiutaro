@@ -1,0 +1,81 @@
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { buttonStyles } from "@/components/ui/button";
+import { CartQuantityControl } from "@/components/store/cart-quantity-control";
+import { requireUser } from "@/lib/auth/session";
+import { getCartSummary } from "@/lib/queries/store";
+import { formatCurrency } from "@/lib/utils";
+
+export const metadata: Metadata = { title: "Cart Saya — Reiutaro" };
+
+export default async function CartPage() {
+  await requireUser();
+  const cart = await getCartSummary();
+
+  if (!cart || cart.items.length === 0) {
+    return (
+      <div>
+        <h1 className="font-display text-2xl text-white">Cart</h1>
+        <div className="mt-8 rounded-xl border border-ink-800 bg-ink-900/60 p-10 text-center">
+          <p className="text-ink-300">Cart kamu masih kosong.</p>
+          <Link href="/store" className={buttonStyles({ variant: "primary", size: "md", className: "mt-5" })}>
+            Jelajahi produk
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h1 className="font-display text-2xl text-white">Cart</h1>
+
+      <div className="mt-6 divide-y divide-ink-800 overflow-hidden rounded-xl border border-ink-800 bg-ink-900/60">
+        {cart.items.map((item) => (
+          <div key={item.id} className="flex items-center gap-4 p-4">
+            {item.cover ? (
+              <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg">
+                <Image
+                  src={item.cover}
+                  alt={item.name}
+                  fill
+                  sizes="64px"
+                  className="object-cover"
+                  unoptimized
+                />
+              </div>
+            ) : (
+              <div className="h-16 w-16 shrink-0 rounded-lg bg-ink-800" />
+            )}
+            <div className="min-w-0 flex-1">
+              <Link
+                href={`/store/product/${item.slug}`}
+                className="truncate font-medium text-paper-50 transition-colors hover:text-gold-400"
+              >
+                {item.name}
+              </Link>
+              <p className="text-sm text-ink-400">{formatCurrency(item.price, item.currency)}</p>
+            </div>
+            <CartQuantityControl itemId={item.id} quantity={item.quantity} stock={item.stock} />
+            <p className="w-24 text-right font-semibold text-paper-50">
+              {formatCurrency(item.subtotal, item.currency)}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+        <p className="text-sm text-ink-400">
+          Subtotal:{" "}
+          <span className="text-xl font-semibold text-gold-400">
+            {formatCurrency(cart.subtotal, "USD")}
+          </span>
+        </p>
+        <Link href="/account/checkout" className={buttonStyles({ variant: "primary", size: "md" })}>
+          Lanjut ke checkout
+        </Link>
+      </div>
+    </div>
+  );
+}
