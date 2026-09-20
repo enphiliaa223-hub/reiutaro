@@ -35,7 +35,7 @@ export default async function AdminPostsPage() {
                 <ConfirmDelete
                   label="Hapus"
                   confirmLabel="Hapus post ini beserta komentarnya?"
-                  action={() => deletePost(post.id)}
+                  action={deletePost.bind(null, post.id)}
                 />
               </div>
             </div>

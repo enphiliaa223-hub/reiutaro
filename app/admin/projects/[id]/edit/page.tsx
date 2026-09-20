@@ -23,7 +23,7 @@ export default async function EditProjectPage({
         <ConfirmDelete
           label="Arsipkan proyek"
           confirmLabel="Yakin mengarsipkan proyek ini?"
-          action={() => deleteProject(project.id)}
+          action={deleteProject.bind(null, project.id)}
         />
       </div>
       <ProjectForm project={project} />

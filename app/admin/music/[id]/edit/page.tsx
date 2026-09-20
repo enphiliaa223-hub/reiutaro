@@ -20,7 +20,7 @@ export default async function EditTrackPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3">
         <h1 className="font-display text-xl text-white">Edit lagu</h1>
-        <ConfirmDelete label="Hapus" confirmLabel="Hapus lagu ini?" action={() => deleteTrack(track.id)} />
+        <ConfirmDelete label="Hapus" confirmLabel="Hapus lagu ini?" action={deleteTrack.bind(null, track.id)} />
       </div>
       <TrackForm track={track} />
     </div>

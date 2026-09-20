@@ -38,7 +38,7 @@ export default async function AdminReportsPage() {
                     <ConfirmDelete
                       label="Hapus post"
                       confirmLabel="Hapus post yang dilaporkan?"
-                      action={() => deletePost(report.targetId)}
+                      action={deletePost.bind(null, report.targetId)}
                       onDone={() => undefined}
                     />
                   ) : null}
@@ -46,12 +46,12 @@ export default async function AdminReportsPage() {
                     <ConfirmDelete
                       label="Hapus komentar"
                       confirmLabel="Hapus komentar yang dilaporkan?"
-                      action={() => deleteComment(report.targetId)}
+                      action={deleteComment.bind(null, report.targetId)}
                     />
                   ) : null}
                   <ConfirmDelete
                     label="Tandai selesai"
-                    action={() => resolveReport(report.id)}
+                    action={resolveReport.bind(null, report.id)}
                   />
                   <Badge variant="danger">open</Badge>
                 </div>

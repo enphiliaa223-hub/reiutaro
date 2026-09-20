@@ -46,7 +46,7 @@ export default async function AdminMusicPage() {
                 <ConfirmDelete
                   label="Hapus"
                   confirmLabel={`Hapus "${track.title}"?`}
-                  action={() => deleteTrack(track.id)}
+                  action={deleteTrack.bind(null, track.id)}
                 />
               </div>
             </div>

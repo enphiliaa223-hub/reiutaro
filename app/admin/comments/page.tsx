@@ -32,7 +32,7 @@ export default async function AdminCommentsPage() {
               <ConfirmDelete
                 label="Hapus"
                 confirmLabel="Hapus komentar ini?"
-                action={() => deleteComment(comment.id)}
+                action={deleteComment.bind(null, comment.id)}
               />
             </div>
           ))}
