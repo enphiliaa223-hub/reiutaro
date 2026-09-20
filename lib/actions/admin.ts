@@ -44,16 +44,20 @@ export async function updateOrderStatus(orderId: string, status: string): Promis
       .select("product_id, quantity")
       .eq("order_id", orderId);
     for (const item of items ?? []) {
-      await supabase.rpc("app.adjust_stock", {
+      const { error: stockError } = await supabase.rpc("adjust_stock", {
         p_product_id: item.product_id,
         p_delta: -item.quantity,
       });
+      if (stockError) {
+        return { ok: false, error: "Gagal memperbarui stok produk." };
+      }
     }
   }
 
   const paymentStatus =
     status === "paid" || status === "completed" ? "paid"
-    : status === "cancelled" || status === "refunded" ? "void"
+    : status === "cancelled" ? "failed"
+    : status === "refunded" ? "refunded"
     : status === "awaiting_payment" ? "pending"
     : "pending";
 
@@ -385,6 +389,8 @@ export async function createUser(formData: FormData): Promise<ActionResult> {
   const admin = createAdminClientIfConfigured();
   if (!admin) return { ok: false, error: "Fitur belum tersedia (SERVICE ROLE belum dikonfigurasi)." };
 
+  // Trigger handle_new_user otomatis membuat baris profil saat auth.user dibuat,
+  // jadi di sini cukup set role + identitas (perbarui baris yang sudah ada).
   const { data: authUser, error: authError } = await admin.auth.admin.createUser({
     email,
     password,
@@ -395,17 +401,17 @@ export async function createUser(formData: FormData): Promise<ActionResult> {
 
   const { error: profileError } = await admin
     .from("profiles")
-    .insert({
-      id: authUser.user.id,
-      username,
-      display_name: displayName,
-      role,
-      status: "active",
-    });
+    .update({ role, username, display_name: displayName })
+    .eq("id", authUser.user.id);
   if (profileError) {
-    // Rollback auth user bila insert profil gagal (mis. username bentrok).
-    await admin.auth.admin.deleteUser(authUser.user.id);
-    return { ok: false, error: "Gagal membuat profil (username mungkin sudah dipakai)." };
+    // Fallback: trigger mungkin tidak berjalan → insert manual.
+    const { error: insError } = await admin
+      .from("profiles")
+      .insert({ id: authUser.user.id, username, display_name: displayName, role, status: "active" });
+    if (insError) {
+      await admin.auth.admin.deleteUser(authUser.user.id);
+      return { ok: false, error: "Gagal membuat profil (username mungkin sudah dipakai)." };
+    }
   }
   return { ok: true, message: `Akun ${username} dibuat.` };
 }

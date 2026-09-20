@@ -279,7 +279,7 @@ export async function getAdminPosts() {
   const { data } = await supabase
     .from("posts")
     .select(
-      "id, title, slug, status, is_pinned, created_at, likes:post_likes(id), " +
+      "id, title, status, is_pinned, created_at, likes:post_likes(id), " +
         "author:profiles!posts_author_id_fkey(username, display_name)",
     )
     .order("created_at", { ascending: false })
@@ -288,7 +288,6 @@ export async function getAdminPosts() {
   return (data as unknown as Array<{
     id: string;
     title: string;
-    slug: string;
     status: string;
     is_pinned: boolean;
     created_at: string;
@@ -297,7 +296,6 @@ export async function getAdminPosts() {
   }>).map((r) => ({
     id: r.id,
     title: r.title,
-    slug: r.slug,
     status: r.status,
     isPinned: Boolean(r.is_pinned),
     createdAt: r.created_at,

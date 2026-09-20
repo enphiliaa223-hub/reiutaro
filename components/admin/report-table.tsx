@@ -15,7 +15,8 @@ export type ReportFilters = {
 const PAYMENT_LABELS: Record<string, string> = {
   pending: "Pending",
   paid: "Lunas",
-  void: "Void",
+  failed: "Gagal",
+  refunded: "Dikembalikan",
 };
 
 /** Unduh CSV (BOM UTF-8 agar terbuka benar di Excel). */

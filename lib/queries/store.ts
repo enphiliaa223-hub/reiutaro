@@ -146,8 +146,7 @@ export async function getCartSummary(): Promise<{ items: CartItemView[]; subtota
       .select(
         "id, quantity, product:products(id, name, slug, price, stock, images:product_images(url))",
       )
-      .eq("cart_id", cart.id)
-      .order("created_at", { ascending: false } as never);
+      .eq("cart_id", cart.id);
 
     if (!data) return null;
 

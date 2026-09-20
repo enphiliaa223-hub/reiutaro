@@ -9,7 +9,8 @@ export const metadata: Metadata = { title: "Transaksi — Admin" };
 const PAYMENT_OPTIONS = [
   { value: "pending", label: "Pending" },
   { value: "paid", label: "Lunas" },
-  { value: "void", label: "Void" },
+  { value: "failed", label: "Gagal" },
+  { value: "refunded", label: "Dikembalikan" },
 ];
 
 export default async function AdminTransactionsPage({
