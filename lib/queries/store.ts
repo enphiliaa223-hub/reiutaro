@@ -32,12 +32,11 @@ interface ProductRow {
   stock: number;
   type: Product["type"];
   featured: boolean;
-  currency?: string | null;
   images: { url: string }[] | null;
 }
 
 const PRODUCT_SELECT =
-  "id, name, slug, description, price, stock, type, featured, currency, images:product_images(url)";
+  "id, name, slug, description, price, stock, type, featured, images:product_images(url)";
 
 function toProduct(row: ProductRow): Product {
   return {
@@ -46,7 +45,7 @@ function toProduct(row: ProductRow): Product {
     slug: row.slug,
     description: row.description,
     price: Number(row.price),
-    currency: row.currency ?? "USD",
+    currency: "IDR",
     cover: row.images?.[0]?.url ?? null,
     stock: Number(row.stock),
     type: row.type,
@@ -72,7 +71,6 @@ export async function getProducts(categorySlug?: string | null): Promise<Product
 
   const { data } = await query
     .order("featured", { ascending: false })
-    .order("sort_order", { ascending: true })
     .order("created_at", { ascending: false });
 
   if (!data) return null;
@@ -129,7 +127,6 @@ interface CartDbRow {
     slug: string;
     price: number;
     stock: number;
-    currency: string | null;
     images: { url: string }[] | null;
   };
 }
@@ -147,7 +144,7 @@ export async function getCartSummary(): Promise<{ items: CartItemView[]; subtota
     const { data } = await supabase
       .from("cart_items")
       .select(
-        "id, quantity, product:products(id, name, slug, price, stock, currency, images:product_images(url))",
+        "id, quantity, product:products(id, name, slug, price, stock, images:product_images(url))",
       )
       .eq("cart_id", cart.id)
       .order("created_at", { ascending: false } as never);
@@ -163,7 +160,7 @@ export async function getCartSummary(): Promise<{ items: CartItemView[]; subtota
         name: r.product.name,
         slug: r.product.slug,
         price: Number(r.product.price),
-        currency: r.product.currency ?? "USD",
+        currency: "IDR",
         quantity: r.quantity,
         stock: Number(r.product.stock),
         subtotal: Math.round((Number(r.product.price) * r.quantity) * 100) / 100,
