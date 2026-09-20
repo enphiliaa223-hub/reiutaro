@@ -1,4 +1,16 @@
+import { headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
+
+/** Ambil IP klien (Vercel mengisi x-forwarded-for). Aman saat dipakai di server. */
+export async function getClientIp(): Promise<string> {
+  try {
+    const h = await headers();
+    const fwd = h.get("x-forwarded-for");
+    return (fwd ? fwd.split(",")[0].trim() : "unknown").slice(0, 64);
+  } catch {
+    return "unknown";
+  }
+}
 
 /**
  * Rate limiter per-key (server-only) memakai RPC atomik di DB.

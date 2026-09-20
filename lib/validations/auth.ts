@@ -34,10 +34,27 @@ export const profileSchema = z.object({
     .regex(usernameRegex, "3–30 karakter: huruf kecil, angka, atau underscore"),
   displayName: z.string().trim().min(2, "Minimal 2 karakter").max(50, "Maksimal 50 karakter"),
   bio: z.string().trim().max(500, "Maksimal 500 karakter").optional().or(z.literal("")),
+  avatarUrl: z.string().url("URL avatar tidak valid").max(500).optional().or(z.literal("")),
 });
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Password lama wajib diisi"),
+    newPassword: z.string().min(8, "Password baru minimal 8 karakter"),
+    confirm: z.string().min(1, "Ulangi password baru"),
+  })
+  .refine((v) => v.newPassword === v.confirm, {
+    message: "Konfirmasi password tidak cocok.",
+    path: ["confirm"],
+  })
+  .refine((v) => v.currentPassword !== v.newPassword, {
+    message: "Password baru harus berbeda dari password lama.",
+    path: ["newPassword"],
+  });
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type ProfileInput = z.infer<typeof profileSchema>;
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;

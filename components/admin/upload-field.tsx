@@ -52,7 +52,7 @@ export function UploadField({
       }
       onChange(multiple ? [...value, ...uploaded] : uploaded);
     } catch {
-      setError("Upload gagal. Pastikan kamu admin dan file valid.");
+      setError("Upload gagal. Pastikan kamu login dan file valid.");
     } finally {
       setBusy(false);
       if (inputRef.current) inputRef.current.value = "";

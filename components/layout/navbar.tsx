@@ -22,7 +22,11 @@ const NAV_LINKS = [
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <span className={cn("font-display text-lg uppercase tracking-wide", className)}>
+    <span
+      translate="no"
+      data-no-translate
+      className={cn("font-display text-lg uppercase tracking-wide", className)}
+    >
       <span className="text-paper-50">Reiuta</span>
       <span className="text-gold-400">rou</span>
     </span>
@@ -160,6 +164,10 @@ export function Navbar() {
                     </Link>
                   );
                 })}
+
+                <div className="mt-2 border-t border-ink-800 pt-3">
+                  <UserMenu mobile />
+                </div>
               </Container>
             </motion.nav>
           )}

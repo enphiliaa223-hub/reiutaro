@@ -4,6 +4,7 @@ export const createPostSchema = z.object({
   title: z.string().trim().max(150, "Judul maksimal 150 karakter").optional().or(z.literal("")),
   content: z.string().trim().min(1, "Konten wajib diisi").max(12000, "Maksimal 12.000 karakter"),
   categoryId: z.string().uuid("Kategori tidak valid").optional().or(z.literal("")),
+  imageUrl: z.string().url("URL gambar tidak valid").max(500).optional().or(z.literal("")),
 });
 
 export const createCommentSchema = z.object({

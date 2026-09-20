@@ -38,7 +38,7 @@ export default async function AdminMusicPage() {
               <Link href={`/admin/music/${track.id}/edit`} className="min-w-0 flex-1">
                 <p className="truncate font-medium text-paper-50">{track.title}</p>
                 <p className="truncate text-xs text-ink-400">
-                  {track.artist} · {track.duration_seconds ? `${track.duration_seconds}s` : "tanpa durasi"}
+                  {track.artist} · {track.duration ? `${track.duration}s` : "tanpa durasi"}
                 </p>
               </Link>
               <div className="flex shrink-0 items-center gap-3">

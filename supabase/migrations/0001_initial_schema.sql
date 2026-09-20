@@ -346,7 +346,7 @@ create table public.orders (
   notes             text,
   subtotal          numeric(12,2) not null default 0 check (subtotal >= 0),
   total             numeric(12,2) not null default 0 check (total >= 0),
-  currency          text not null default 'USD',
+  currency          text not null default 'IDR',
   created_at        timestamptz not null default now(),
   updated_at        timestamptz not null default now()
 );

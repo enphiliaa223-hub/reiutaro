@@ -27,7 +27,7 @@ export default async function EditProductPage({
         <ConfirmDelete
           label="Nonaktifkan produk"
           confirmLabel="Yakin menonaktifkan produk ini?"
-          action={() => deleteProduct(product.id)}
+          action={deleteProduct.bind(null, product.id)}
         />
       </div>
       <ProductForm product={product} categories={categories ?? []} />

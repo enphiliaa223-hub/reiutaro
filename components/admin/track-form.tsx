@@ -20,7 +20,7 @@ export function TrackForm({
     album: string | null;
     cover_url: string | null;
     audio_url: string | null;
-    duration_seconds: number | null;
+    duration: number | null;
     active: boolean;
     sort_order: number;
   };
@@ -82,7 +82,7 @@ export function TrackForm({
           <label htmlFor="durationSeconds" className="text-xs font-medium uppercase tracking-wider text-ink-400">
             Durasi (detik)
           </label>
-          <Input id="durationSeconds" name="durationSeconds" type="number" min={0} defaultValue={track?.duration_seconds ?? 0} />
+          <Input id="durationSeconds" name="durationSeconds" type="number" min={0} defaultValue={track?.duration ?? 0} />
         </div>
         <div className="space-y-1.5">
           <label htmlFor="sortOrder" className="text-xs font-medium uppercase tracking-wider text-ink-400">

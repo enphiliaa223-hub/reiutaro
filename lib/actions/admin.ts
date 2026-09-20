@@ -66,8 +66,8 @@ const productStatusEnum = z.enum(["active", "inactive"]);
 
 const PRODUCT_TYPES = ["digital", "topup", "merchandise", "service", "other"] as const;
 
-function stripEmpty(v: unknown) {
-  return typeof v === "string" && v.trim() === "" ? null : v;
+function stripEmpty(v: string | null | undefined): string | null {
+  return typeof v === "string" && v.trim() === "" ? null : (v ?? null);
 }
 
 async function uniqueSlug(supabase: Awaited<ReturnType<typeof createServerClientScoped>>, base: string, excludeId?: string) {
@@ -243,13 +243,20 @@ export async function saveTrack(input: {
     return { ok: false, error: "Judul & artis wajib diisi." };
   }
   const supabase = await adminSession();
-  const data = {
+  const data: {
+    title: string;
+    artist: string;
+    cover_url: string | null;
+    audio_url: string | null;
+    duration: number | null;
+    active: boolean;
+    sort_order: number;
+  } = {
     title: input.title.trim(),
     artist: input.artist.trim(),
-    album: stripEmpty(input.album),
     cover_url: stripEmpty(input.coverUrl),
     audio_url: stripEmpty(input.audioUrl),
-    duration_seconds: input.durationSeconds && input.durationSeconds > 0 ? Math.round(input.durationSeconds) : null,
+    duration: input.durationSeconds && input.durationSeconds > 0 ? Math.round(input.durationSeconds) : null,
     active: input.active,
     sort_order: input.sortOrder ?? 0,
   };

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Card, CardBody, Badge, Avatar } from "@/components/ui";
 import { StaggerItem } from "@/components/motion/reveal";
 import { formatDate, truncate } from "@/lib/utils";
@@ -9,6 +10,18 @@ export function PostCard({ post }: { post: Post }) {
     <StaggerItem className="h-full">
       <Link href={`/community/post/${post.id}`} className="block h-full">
         <Card interactive className="flex h-full flex-col">
+          {post.imageUrl ? (
+            <div className="relative aspect-video w-full border-b border-ink-800">
+              <Image
+                src={post.imageUrl}
+                alt={post.title ?? "Post image"}
+                fill
+                sizes="(max-width: 768px) 100vw, 400px"
+                className="object-cover"
+                unoptimized
+              />
+            </div>
+          ) : null}
           <CardBody className="flex flex-1 flex-col">
             <div className="flex items-center gap-3">
               <Avatar name={post.author.displayName} src={post.author.avatarUrl} size="sm" />

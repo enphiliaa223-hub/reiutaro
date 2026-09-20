@@ -17,8 +17,7 @@ interface UserState {
   role: string;
 }
 
-export function UserMenu() {
-  const router = useRouter();
+export function UserMenu({ mobile = false }: { mobile?: boolean }) {  const router = useRouter();
   const [user, setUser] = useState<UserState | null>(null);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -95,12 +94,50 @@ export function UserMenu() {
   // Belum login.
   if (!loading && !user) {
     return (
-      <Link
-        href="/login"
-        className="hidden rounded-md border border-ink-600 px-4 py-1.5 text-sm font-medium text-paper-100 transition-colors hover:border-gold-400 hover:text-gold-400 sm:inline-flex"
-      >
-        Login
-      </Link>
+      <div className="flex flex-col gap-2">
+        <Link
+          href="/login"
+          className={cn(
+            "inline-flex items-center justify-center rounded-md border border-ink-600 px-4 py-1.5 text-sm font-medium text-paper-100 transition-colors hover:border-gold-400 hover:text-gold-400",
+            mobile ? "w-full rounded-lg py-2.5" : "hidden sm:inline-flex",
+          )}
+        >
+          Login
+        </Link>
+        {mobile ? (
+          <Link
+            href="/register"
+            className="inline-flex w-full items-center justify-center rounded-lg bg-gold-400 px-4 py-2.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-gold-300"
+          >
+            Daftar
+          </Link>
+        ) : null}
+      </div>
+    );
+  }
+
+  // Mode mobile + sudah login: render kolom tautan langsung (tanpa dropdown
+  // yang bisa ke-clip oleh menu hamburger) supaya selalu bisa diklik di Android.
+  if (mobile && user) {
+    return (
+      <div className="flex flex-col gap-1">
+        <MenuLink href="/account/profile" onClick={() => setOpen(false)}>
+          Profil saya
+        </MenuLink>
+        {user.role === "admin" ? (
+          <MenuLink href="/admin" onClick={() => setOpen(false)}>
+            Admin panel
+          </MenuLink>
+        ) : null}
+        <button
+          type="button"
+          onClick={handleSignOut}
+          disabled={signingOut}
+          className="flex items-center gap-2 rounded-lg border-t border-ink-800 px-3 py-2 text-left text-sm font-medium text-red-300 transition-colors hover:bg-ink-800"
+        >
+          {signingOut ? <Spinner className="h-4 w-4" /> : "Keluar"}
+        </button>
+      </div>
     );
   }
 

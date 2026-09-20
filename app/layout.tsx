@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { Archivo_Black, Space_Grotesk } from "next/font/google";
 import { ToastProvider } from "@/components/ui";
@@ -30,6 +30,16 @@ export const metadata: Metadata = {
     "REIUTAROU — personal digital universe by Muhammad Reinaldi. Projects, anime community, store, and music.",
   applicationName: "REIUTAROU",
   formatDetection: { telephone: false },
+  other: {
+    // Cegah browser/Chrome menerjemahkan nama brand secara otomatis.
+    google: "notranslate",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#050507",
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
@@ -39,7 +49,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${archivoBlack.variable} ${spaceGrotesk.variable} h-full antialiased`}
+      translate="no"
+      className={`${archivoBlack.variable} ${spaceGrotesk.variable} notranslate h-full antialiased`}
     >
       <body className="min-h-full">
         <MusicProvider initialTracks={tracks}>

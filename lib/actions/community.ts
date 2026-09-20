@@ -35,6 +35,12 @@ export async function createPost(input: unknown): Promise<ActionResult> {
     return { ok: false, error: "Terlalu banyak post. Coba lagi nanti." };
   }
 
+  // Hanya terima gambar dari storage project sendiri (cegah URL asing/abuse).
+  const imageUrl = parsed.data.imageUrl?.trim() ?? "";
+  if (imageUrl !== "" && !/^https:\/\/[a-z0-9]+\.supabase\.co\/storage\/v1\/object\/public\/community\//.test(imageUrl)) {
+    return { ok: false, error: "URL gambar tidak valid." };
+  }
+
   const { error, data } = await auth.supabase
     .from("posts")
     .insert({
@@ -42,6 +48,7 @@ export async function createPost(input: unknown): Promise<ActionResult> {
       title: parsed.data.title && parsed.data.title.trim() !== "" ? parsed.data.title : null,
       content: parsed.data.content,
       category_id: parsed.data.categoryId || null,
+      image_url: imageUrl || null,
       status: "published",
     })
     .select("id")

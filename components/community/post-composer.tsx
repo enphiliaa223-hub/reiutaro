@@ -7,12 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Spinner } from "@/components/ui/spinner";
+import { UploadField } from "@/components/admin/upload-field";
 import type { CategoryRow } from "@/lib/queries/community";
 
 export function PostComposer({ categories }: { categories: CategoryRow[] }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string[]>([]);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -24,6 +26,7 @@ export function PostComposer({ categories }: { categories: CategoryRow[] }) {
       title: String(formData.get("title") ?? ""),
       content: String(formData.get("content") ?? ""),
       categoryId: String(formData.get("categoryId") ?? ""),
+      imageUrl: imageUrl[0] ?? "",
     });
     setPending(false);
     if (result.ok && result.id) {
@@ -62,6 +65,14 @@ export function PostComposer({ categories }: { categories: CategoryRow[] }) {
         rows={6}
         maxLength={12000}
         placeholder="Tulis kontenmu di sini... Hanya teks (markdown belum didukung)."
+      />
+
+      <UploadField
+        bucket="community"
+        label="Gambar (opsional)"
+        multiple={false}
+        value={imageUrl}
+        onChange={setImageUrl}
       />
 
       <div className="flex justify-end">

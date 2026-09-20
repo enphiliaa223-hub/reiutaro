@@ -24,8 +24,8 @@ export async function Footer() {
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]">
           <div>
             <p className="font-display text-3xl uppercase leading-none tracking-tight sm:text-4xl">
-              <span className="text-paper-50">{brandStart}</span>
-              <span className="text-gold-400">{brandEnd}</span>
+              <span translate="no" data-no-translate className="text-paper-50">{brandStart}</span>
+              <span translate="no" data-no-translate className="text-gold-400">{brandEnd}</span>
             </p>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-300">
               A personal digital universe by{" "}

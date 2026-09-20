@@ -1,23 +1,28 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { updateProfile, type ActionResult } from "@/lib/actions/auth";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Avatar } from "@/components/ui/avatar";
+import { UploadField } from "@/components/admin/upload-field";
 import type { Profile } from "@/types/profile";
 
 const initialState: ActionResult = { ok: false, error: "" };
 
 export function ProfileForm({ profile }: { profile: Profile }) {
+  const [avatarUrl, setAvatarUrl] = useState<string[]>(
+    profile.avatar_url ? [profile.avatar_url] : [],
+  );
   const [state, formAction, isPending] = useActionState(
     async (_prev: ActionResult, formData: FormData) =>
       updateProfile({
         username: String(formData.get("username") ?? ""),
         displayName: String(formData.get("displayName") ?? ""),
         bio: String(formData.get("bio") ?? ""),
+        avatarUrl: avatarUrl[0] ?? "",
       }),
     initialState,
   );
@@ -34,14 +39,16 @@ export function ProfileForm({ profile }: { profile: Profile }) {
       <div className="flex items-center gap-4">
         <Avatar
           name={profile.display_name || profile.username}
-          src={profile.avatar_url ?? undefined}
+          src={avatarUrl[0] ?? profile.avatar_url ?? undefined}
           size="lg"
         />
-        <div>
-          <p className="text-sm text-ink-400">
-            Foto profil tersedia di Phase 6 (upload avatar).
-          </p>
-        </div>
+        <UploadField
+          bucket="avatars"
+          label="Foto profil"
+          multiple={false}
+          value={avatarUrl}
+          onChange={setAvatarUrl}
+        />
       </div>
 
       <div className="space-y-1.5">

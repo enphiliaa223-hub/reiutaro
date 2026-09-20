@@ -81,7 +81,7 @@ begin
   ) values (
     v_order_number, v_user, 'awaiting_payment', 'pending',
     p_customer_name, p_customer_email, p_customer_phone, p_customer_address, p_notes,
-    v_subtotal, v_subtotal, 'USD'
+    v_subtotal, v_subtotal, 'IDR'
   ) returning id into v_order_id;
 
   insert into order_items (order_id, product_id, product_name, unit_price, quantity, subtotal)

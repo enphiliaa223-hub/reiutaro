@@ -381,7 +381,7 @@ export async function getAdminTracks() {
     album: string | null;
     cover_url: string | null;
     audio_url: string | null;
-    duration_seconds: number | null;
+    duration: number | null;
     active: boolean;
     sort_order: number;
     created_at: string;
@@ -404,7 +404,7 @@ export async function getAdminTrack(id: string) {
     album: string | null;
     cover_url: string | null;
     audio_url: string | null;
-    duration_seconds: number | null;
+    duration: number | null;
     active: boolean;
     sort_order: number;
     created_at: string;

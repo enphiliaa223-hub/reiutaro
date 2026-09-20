@@ -6,11 +6,16 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** Format angka ke mata uang (client-server safe). */
-export function formatCurrency(amount: number, currency = "USD") {
-  return new Intl.NumberFormat("en-US", {
+/**
+ * Format angka ke Rupiah (id-ID, tanpa desimal). Argumen `currency` diabaikan
+ * sengaja — toko ini SELALU menampilkan rupiah apa pun label yang tersimpan di DB.
+ */
+export function formatCurrency(amount: number, _currency = "IDR") {
+  return new Intl.NumberFormat("id-ID", {
     style: "currency",
-    currency,
+    currency: "IDR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(amount);
 }
 

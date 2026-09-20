@@ -198,5 +198,5 @@ Status per phase (diupdate tiap selesai). Referensi: `docs/ARCHITECTURE.md`.
 ---
 
 ## Perbaikan Lanjutan (Post-Phase 15)
-- Perbaiki crash client saat env Supabase kosong: `CartBadge`, `UserMenu` (guard env + fallback UI).
-- Buat halaman `/music` yang tadinya 404: query `getActiveTracks()` + provider global pakai `initialTracks` di root layout + daftar track interaktif (`TrackList`) + player floating.
+- ✅ Crash client saat env Supabase kosong diperbaiki: `CartBadge` & `UserMenu` guard `createBrowserClientScoped()` dalam try/catch + fallback UI (user = "belum login", badge count disembunyikan).
+- ✅ Halaman `/music` dibuat (dulu 404): query `getActiveTracks()` (return `[]` saat DB off) + `MusicProvider initialTracks` di root layout + `TrackList` interaktif + player floating.
