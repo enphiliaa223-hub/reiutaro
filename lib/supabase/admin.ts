@@ -17,3 +17,14 @@ export function createAdminClient() {
     },
   });
 }
+
+/**
+ * Versi env-safe: kembalikan null bila SERVICE ROLE key belum diisi,
+ * supaya fitur tidak melempar error di runtime saat env belum terkonfigurasi.
+ */
+export function createAdminClientIfConfigured() {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    return null;
+  }
+  return createAdminClient();
+}

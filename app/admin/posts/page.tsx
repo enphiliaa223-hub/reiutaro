@@ -3,10 +3,12 @@ import { getAdminPosts } from "@/lib/queries/admin";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDelete } from "@/components/admin/confirm-delete";
 import { deletePost } from "@/lib/actions/admin";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata: Metadata = { title: "Post — Admin" };
 
 export default async function AdminPostsPage() {
+  await requireAdmin();
   const posts = await getAdminPosts();
 
   return (

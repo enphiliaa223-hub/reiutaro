@@ -36,6 +36,18 @@ export async function signIn(input: unknown, next?: string | null): Promise<Acti
   const supabase = await createServerClientScoped();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) return { ok: false, error: "Email atau password salah." };
+
+  // Cek status profil: akun suspended/banned tidak boleh masuk.
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("status")
+    .eq("id", (await supabase.auth.getUser()).data.user?.id ?? "")
+    .maybeSingle();
+  if (profile && profile.status !== "active") {
+    await supabase.auth.signOut();
+    return { ok: false, error: "Akun kamu sedang diblokir. Hubungi admin." };
+  }
+
   redirect(safeInternalPath(next));
 }
 

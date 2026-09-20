@@ -4,6 +4,7 @@ import { getAdminTrack } from "@/lib/queries/admin";
 import { TrackForm } from "@/components/admin/track-form";
 import { ConfirmDelete } from "@/components/admin/confirm-delete";
 import { deleteTrack } from "@/lib/actions/admin";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata: Metadata = { title: "Edit Lagu — Admin" };
 
@@ -13,6 +14,7 @@ export default async function EditTrackPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  await requireAdmin();
   const track = await getAdminTrack(id);
   if (!track) notFound();
 

@@ -1,14 +1,21 @@
 "use server";
 
 import { z } from "zod";
-import { requireAdmin } from "@/lib/auth/session";
+import { requireAdmin, requireStaff } from "@/lib/auth/session";
 import { createServerClientScoped } from "@/lib/supabase/server";
+import { createAdminClientIfConfigured } from "@/lib/supabase/admin";
 import { slugify } from "@/lib/utils";
 
 export type ActionResult = { ok: true; message: string } | { ok: false; error: string };
 
 async function adminSession() {
   await requireAdmin();
+  return createServerClientScoped();
+}
+
+/** Admin ATAU seller — untuk sesi kelola produk. */
+async function staffSession() {
+  await requireStaff();
   return createServerClientScoped();
 }
 
@@ -101,7 +108,7 @@ export async function saveProduct(input: {
     return { ok: false, error: "Status/tipe tidak valid." };
   }
 
-  const supabase = await adminSession();
+  const supabase = await staffSession();
 
   if (input.id) {
     const { error } = await supabase
@@ -157,7 +164,7 @@ async function replaceImages(
 }
 
 export async function deleteProduct(id: string): Promise<ActionResult> {
-  const supabase = await adminSession();
+  const supabase = await staffSession();
   const { error } = await supabase.from("products").update({ status: "inactive" }).eq("id", id);
   if (error) return { ok: false, error: "Gagal menonaktifkan produk." };
   return { ok: true, message: "Produk dinonaktifkan." };
@@ -345,4 +352,109 @@ export async function saveSettings(entries: { key: string; value: string }[]): P
     if (error) return { ok: false, error: `Gagal menyimpan ${item.key}.` };
   }
   return { ok: true, message: "Pengaturan disimpan." };
+}
+
+// ---------------------------------------------------------------------------
+// Kelola akun (ADMIN ONLY — butuh service role untuk akses auth.users)
+// ---------------------------------------------------------------------------
+
+const USER_ROLES = ["user", "moderator", "seller", "admin"] as const;
+const USER_STATUSES = ["active", "suspended", "banned"] as const;
+
+/** Admin yang sedang login via session biasa (audit + cegah self-action). */
+async function adminActor() {
+  const profile = await requireAdmin();
+  return profile;
+}
+
+export async function createUser(formData: FormData): Promise<ActionResult> {
+  const actor = await adminActor();
+
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const username = String(formData.get("username") ?? "").trim();
+  const displayName = String(formData.get("displayName") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+  const role = String(formData.get("role") ?? "user");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: "Email tidak valid." };
+  if (password.length < 8) return { ok: false, error: "Password minimal 8 karakter." };
+  if (username.length < 2) return { ok: false, error: "Username minimal 2 karakter." };
+  if (displayName.length < 1) return { ok: false, error: "Nama tampilan wajib diisi." };
+  if (!USER_ROLES.includes(role as (typeof USER_ROLES)[number])) return { ok: false, error: "Role tidak valid." };
+  if (role === "admin" && actor.role !== "admin") return { ok: false, error: "Tidak diizinkan." };
+
+  const admin = createAdminClientIfConfigured();
+  if (!admin) return { ok: false, error: "Fitur belum tersedia (SERVICE ROLE belum dikonfigurasi)." };
+
+  const { data: authUser, error: authError } = await admin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: { username, display_name: displayName },
+  });
+  if (authError) return { ok: false, error: authError.message };
+
+  const { error: profileError } = await admin
+    .from("profiles")
+    .insert({
+      id: authUser.user.id,
+      username,
+      display_name: displayName,
+      role,
+      status: "active",
+    });
+  if (profileError) {
+    // Rollback auth user bila insert profil gagal (mis. username bentrok).
+    await admin.auth.admin.deleteUser(authUser.user.id);
+    return { ok: false, error: "Gagal membuat profil (username mungkin sudah dipakai)." };
+  }
+  return { ok: true, message: `Akun ${username} dibuat.` };
+}
+
+export async function setUserRole(formData: FormData): Promise<ActionResult> {
+  const actor = await adminActor();
+  const userId = String(formData.get("userId") ?? "");
+  const role = String(formData.get("role") ?? "");
+  if (!userId) return { ok: false, error: "Pengguna tidak valid." };
+  if (!USER_ROLES.includes(role as (typeof USER_ROLES)[number])) {
+    return { ok: false, error: "Role tidak valid." };
+  }
+  if (userId === actor.id) return { ok: false, error: "Tidak bisa mengubah role kamu sendiri." };
+
+  const supabase = await createServerClientScoped();
+  if (role !== "admin") {
+    // Cegah demote admin terakhir.
+    const { count } = await supabase
+      .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .eq("role", "admin");
+    if ((count ?? 0) <= 1) return { ok: false, error: "Minimal harus ada satu admin." };
+  }
+  const { error } = await supabase.from("profiles").update({ role }).eq("id", userId);
+  if (error) return { ok: false, error: "Gagal mengubah role." };
+  return { ok: true, message: "Role diperbarui." };
+}
+
+export async function setUserStatus(formData: FormData): Promise<ActionResult> {
+  const actor = await adminActor();
+  const userId = String(formData.get("userId") ?? "");
+  const status = String(formData.get("status") ?? "");
+  if (!userId) return { ok: false, error: "Pengguna tidak valid." };
+  if (!USER_STATUSES.includes(status as (typeof USER_STATUSES)[number])) {
+    return { ok: false, error: "Status tidak valid." };
+  }
+  if (userId === actor.id) return { ok: false, error: "Tidak bisa memblokir akun kamu sendiri." };
+
+  const admin = createAdminClientIfConfigured();
+  if (!admin) return { ok: false, error: "Fitur belum tersedia (SERVICE ROLE belum dikonfigurasi)." };
+
+  // Sinkronkan banned terhadap akun auth agar sesi yang aktif ikut diusir.
+  const banError = status === "banned"
+    ? (await admin.auth.admin.updateUserById(userId, { ban_duration: "876000h" })).error
+    : (await admin.auth.admin.updateUserById(userId, { ban_duration: "none" })).error;
+  if (banError) return { ok: false, error: "Gagal memperbarui status auth." };
+
+  const supabase = await createServerClientScoped();
+  const { error: profileError } = await supabase.from("profiles").update({ status }).eq("id", userId);
+  if (profileError) return { ok: false, error: "Gagal memperbarui status profil." };
+  return { ok: true, message: status === "banned" ? "Akun diblokir." : "Status akun diperbarui." };
 }

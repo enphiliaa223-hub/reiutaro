@@ -423,3 +423,112 @@ export async function getAdminSettings(): Promise<AdminSettingRow[] | null> {
   if (!data) return null;
   return data.map((r) => ({ key: r.key, value: r.value }));
 }
+
+// ---------------------------------------------------------------------------
+// Kelola akun & laporan transaksi
+// ---------------------------------------------------------------------------
+
+export interface AdminUserRow {
+  id: string;
+  username: string;
+  display_name: string;
+  email: string | null;
+  role: string;
+  status: string;
+  created_at: string;
+}
+
+/** Semua profil + email (email hanya ada jika service role terkonfigurasi). */
+export async function getAdminUsers(): Promise<AdminUserRow[] | null> {
+  const supabase = await scoped();
+  if (!supabase) return null;
+
+  const { data } = await supabase
+    .from("profiles")
+    .select("id, username, display_name, role, status, created_at")
+    .order("created_at", { ascending: false })
+    .limit(500) as never;
+  if (!data) return null;
+
+  const rows = data as unknown as AdminUserRow[];
+
+  // Enrich email via auth.admin (opsional; degrade diam-diam bila env belum ada).
+  let emailById = new Map<string, string>();
+  try {
+    const admin = (await import("@/lib/supabase/admin")).createAdminClientIfConfigured();
+    if (admin) {
+      const { data: users } = await admin.auth.admin.listUsers();
+      emailById = new Map((users?.users ?? []).map((u) => [u.id, u.email ?? ""]));
+    }
+  } catch {
+    emailById = new Map();
+  }
+
+  return rows.map((r) => ({ ...r, email: emailById.get(r.id) ?? null }));
+}
+
+export interface AdminReportRow {
+  id: string;
+  orderNumber: string;
+  customerEmail: string | null;
+  total: number;
+  currency: string;
+  itemCount: number;
+  status: string;
+  paymentStatus: string;
+  createdAt: string;
+}
+
+export interface AdminReportFilters {
+  from?: string;
+  to?: string;
+  status?: string;
+  paymentStatus?: string;
+}
+
+/** Laporan transaksi untuk tabel + export CSV/PDF. */
+export async function getAdminOrdersForReport(
+  filters: AdminReportFilters = {},
+): Promise<AdminReportRow[] | null> {
+  const supabase = await scoped();
+  if (!supabase) return null;
+
+  // Builder dibuat any agar filter opsional bisa dirantai bersyarat.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const builder: any = supabase
+    .from("orders")
+    .select("id, order_number, customer_email, status, payment_status, total, currency, created_at, items:order_items(id)")
+    .order("created_at", { ascending: false })
+    .limit(1000);
+
+  let query = builder;
+  if (filters.from) query = query.gte("created_at", filters.from);
+  if (filters.to) query = query.lte("created_at", filters.to);
+  if (filters.status) query = query.eq("status", filters.status);
+  if (filters.paymentStatus) query = query.eq("payment_status", filters.paymentStatus);
+
+  const { data } = await query;
+  if (!data) return null;
+
+  return (data as unknown as Array<{
+    id: string;
+    order_number: string;
+    customer_email: string | null;
+    status: string;
+    payment_status: string;
+    total: number;
+    currency: string | null;
+    created_at: string;
+    items: unknown[];
+  }>).map((r) => ({
+    id: r.id,
+    orderNumber: r.order_number,
+    customerEmail: r.customer_email,
+    total: Number(r.total),
+    currency: r.currency ?? "IDR",
+    itemCount: (r.items ?? []).length,
+    status: r.status,
+    paymentStatus: r.payment_status,
+    createdAt: r.created_at,
+  }));
+}

@@ -4,10 +4,12 @@ import { getAdminTracks } from "@/lib/queries/admin";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDelete } from "@/components/admin/confirm-delete";
 import { deleteTrack } from "@/lib/actions/admin";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata: Metadata = { title: "Musik — Admin" };
 
 export default async function AdminMusicPage() {
+  await requireAdmin();
   const tracks = await getAdminTracks();
 
   return (

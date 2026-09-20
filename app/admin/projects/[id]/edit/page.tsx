@@ -4,6 +4,7 @@ import { getAdminProject } from "@/lib/queries/admin";
 import { ProjectForm } from "@/components/admin/project-form";
 import { ConfirmDelete } from "@/components/admin/confirm-delete";
 import { deleteProject } from "@/lib/actions/admin";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata: Metadata = { title: "Edit Proyek — Admin" };
 

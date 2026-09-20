@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { getAdminSettings } from "@/lib/queries/admin";
 import { VisualEditor } from "@/components/admin/visual-editor";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata: Metadata = { title: "Visual Editor — Admin" };
 
 export default async function AdminSettingsPage() {
+  await requireAdmin();
   const settings = await getAdminSettings();
 
   return (

@@ -3,10 +3,12 @@ import Link from "next/link";
 import { getAdminOrders } from "@/lib/queries/admin";
 import { formatCurrency } from "@/lib/utils";
 import { ORDER_STATUS_META } from "@/lib/constants/orders";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata: Metadata = { title: "Pesanan — Admin" };
 
 export default async function AdminOrdersPage() {
+  await requireAdmin();
   const orders = await getAdminOrders();
 
   return (

@@ -5,6 +5,7 @@ import { getAdminOrder } from "@/lib/queries/admin";
 import { formatCurrency } from "@/lib/utils";
 import { ORDER_STATUS_META } from "@/lib/constants/orders";
 import { OrderStatusForm } from "@/components/admin/order-status-form";
+import { requireAdmin } from "@/lib/auth/session";
 
 export async function generateMetadata({
   params,
@@ -21,6 +22,7 @@ export default async function AdminOrderDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  await requireAdmin();
   const order = await getAdminOrder(id);
   if (!order) notFound();
   const meta = ORDER_STATUS_META[order.status as keyof typeof ORDER_STATUS_META];

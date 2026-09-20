@@ -4,6 +4,7 @@ import { Archivo_Black, Space_Grotesk } from "next/font/google";
 import { ToastProvider } from "@/components/ui";
 import { MusicProvider } from "@/components/provider/music-provider";
 import { OpeningScreen } from "@/components/layout/opening-screen";
+import { PresencePing } from "@/components/layout/presence-ping";
 import { getActiveTracks, getSiteSettings } from "@/lib/queries/content";
 import { normalizeSettings } from "@/lib/settings";
 import "./globals.css";
@@ -56,6 +57,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <MusicProvider initialTracks={tracks}>
           <ToastProvider>{children}</ToastProvider>
           <OpeningScreen settings={normalized.opening} />
+          <PresencePing />
         </MusicProvider>
       </body>
     </html>

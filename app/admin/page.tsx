@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getCurrentProfile } from "@/lib/auth/session";
+import { redirect } from "next/navigation";
+import { requireStaff } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { getAdminOrders, getDashboardStats } from "@/lib/queries/admin";
 import { formatCurrency } from "@/lib/utils";
@@ -9,11 +10,10 @@ import { ORDER_STATUS_META } from "@/lib/constants/orders";
 export const metadata: Metadata = { title: "Dashboard Admin — Reiutaro" };
 
 export default async function AdminDashboardPage() {
-  const [profile, stats, orders] = await Promise.all([
-    getCurrentProfile(),
-    getDashboardStats(),
-    getAdminOrders(),
-  ]);
+  const profile = await requireStaff();
+  if (profile.role !== "admin") redirect("/admin/products");
+
+  const [stats, orders] = await Promise.all([getDashboardStats(), getAdminOrders()]);
 
   const statCards = [
     { label: "Pengguna", value: stats?.users },

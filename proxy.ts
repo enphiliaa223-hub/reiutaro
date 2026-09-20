@@ -42,7 +42,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Admin area: wajib login + role admin (verifikasi DB, bukan client).
+  // Admin area: wajib login + role staff (admin/moderator/seller) & status aktif.
   if (pathname.startsWith("/admin")) {
     if (!user) {
       const loginUrl = new URL("/login", request.url);
@@ -51,19 +51,35 @@ export async function proxy(request: NextRequest) {
     }
     const { data: profile } = await supabase
       .from("profiles")
-      .select("role")
+      .select("role, status")
       .eq("id", user.id)
       .maybeSingle();
-    if (!profile || (profile.role !== "admin" && profile.role !== "moderator")) {
+    if (
+      !profile ||
+      profile.status !== "active" ||
+      (profile.role !== "admin" && profile.role !== "moderator" && profile.role !== "seller")
+    ) {
       return NextResponse.redirect(new URL("/", request.url));
     }
   }
 
-  // Account area (edit profil, orders nanti): wajib login.
-  if (pathname.startsWith("/account") && !user) {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("next", pathname);
-    return NextResponse.redirect(loginUrl);
+  // Account area (edit profil, orders): wajib login + status aktif.
+  if (pathname.startsWith("/account")) {
+    if (!user) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("next", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("status")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (!profile || profile.status !== "active") {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("blocked", "1");
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
   return supabaseResponse;

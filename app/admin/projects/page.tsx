@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createPublicClient } from "@/lib/supabase/public";
 import { Badge } from "@/components/ui/badge";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata: Metadata = { title: "Konten — Admin" };
 
@@ -15,6 +16,7 @@ interface ProjectAdminRow {
 }
 
 export default async function AdminProjectsPage() {
+  await requireAdmin();
   let projects: ProjectAdminRow[] | null = null;
   try {
     const c = createPublicClient();

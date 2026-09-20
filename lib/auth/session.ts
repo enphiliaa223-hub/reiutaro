@@ -40,11 +40,12 @@ export async function requireUser() {
   return user;
 }
 
-/** Wajib punya profil; redirect login jika belum. */
+/** Wajib punya profil; redirect login jika belum. Akun nonaktif ditolak. */
 export async function requireProfile() {
   await requireUser();
   const profile = await getCurrentProfile();
   if (!profile) redirect("/login");
+  if (profile.status !== "active") redirect("/login?blocked=1");
   return profile;
 }
 
@@ -52,5 +53,12 @@ export async function requireProfile() {
 export async function requireAdmin() {
   const profile = await requireProfile();
   if (profile.role !== "admin") redirect("/");
+  return profile;
+}
+
+/** Wajib staff (admin ATAU seller, status aktif); redirect ke / jika bukan. */
+export async function requireStaff() {
+  const profile = await requireProfile();
+  if (profile.role !== "admin" && profile.role !== "seller") redirect("/");
   return profile;
 }

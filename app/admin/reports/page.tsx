@@ -3,10 +3,12 @@ import { getAdminReports } from "@/lib/queries/admin";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDelete } from "@/components/admin/confirm-delete";
 import { deletePost, deleteComment, resolveReport } from "@/lib/actions/admin";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata: Metadata = { title: "Laporan — Admin" };
 
 export default async function AdminReportsPage() {
+  await requireAdmin();
   const reports = await getAdminReports();
 
   return (
