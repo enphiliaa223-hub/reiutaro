@@ -74,9 +74,18 @@ export function normalizeSettings(settings: SiteSettings | null): NormalizedSett
   if (!settings) return DEFAULT_SETTINGS;
 
   const rawSocials = settings.footer_socials;
+  let footerSocialList = rawSocials;
+  // Data lama mungkin tersimpan sebagai string JSON (sebelum perbaikan).
+  if (typeof rawSocials === "string") {
+    try {
+      footerSocialList = JSON.parse(rawSocials);
+    } catch {
+      footerSocialList = null;
+    }
+  }
   let footerSocials = DEFAULT_SETTINGS.footerSocials;
-  if (Array.isArray(rawSocials)) {
-    const parsed = (rawSocials as unknown[])
+  if (Array.isArray(footerSocialList)) {
+    const parsed = (footerSocialList as unknown[])
       .filter((item): item is { label: string; url: string } => {
         const s = item as { label?: unknown; url?: unknown };
         return typeof s?.label === "string" && typeof s?.url === "string";

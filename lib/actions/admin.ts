@@ -335,6 +335,25 @@ export async function saveSettings(entries: { key: string; value: string }[]): P
   const cooked: { key: string; value: unknown }[] = [];
   for (const entry of entries) {
     if (!(entry.key in SETTING_KEYS)) continue;
+    if (entry.key === "footer_socials") {
+      // JSON array disimpan sebagai jsonb (bukan string) agar konsisten
+      // dengan normalizeSettings yang membaca array.
+      let parsed: { label: string; url: string }[] = [];
+      try {
+        const v = JSON.parse(entry.value);
+        if (Array.isArray(v)) {
+          parsed = v
+            .filter(
+              (s) => s && typeof s.label === "string" && typeof s.url === "string",
+            )
+            .map((s) => ({ label: s.label, url: s.url }));
+        }
+      } catch {
+        // JSON tidak valid → simpan array kosong, bukan string mentah.
+      }
+      cooked.push({ key: entry.key, value: parsed });
+      continue;
+    }
     const type = SETTING_KEYS[entry.key];
     let value: unknown;
     if (type === "boolean") {

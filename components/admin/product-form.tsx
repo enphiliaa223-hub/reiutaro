@@ -89,7 +89,7 @@ export function ProductForm({
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="space-y-1.5">
           <label htmlFor="price" className="text-xs font-medium uppercase tracking-wider text-ink-400">
-            Harga (USD)
+            Harga (Rp)
           </label>
           <Input id="price" name="price" type="number" min={0} step="0.01" required defaultValue={product?.price ?? 0} />
         </div>

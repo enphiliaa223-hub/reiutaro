@@ -226,28 +226,32 @@ export interface SearchResult {
 export async function searchContent(q: string): Promise<SearchResult | null> {
   const c = pub();
   if (!c) return null;
-  const term = `%${q.replace(/[%_]/g, "")}%`;
+  // PostgREST memakai `*` sebagai wildcard di string or(); buang karakter
+  // yang bisa merusak sintaks filter. Kolom tabel dipilih yang aman (text).
+  const term = q.replace(/[*%_,()\\]+/g, " ").trim();
+  if (!term) return { projects: [], posts: [], products: [] };
+  const pattern = `*${term}*`;
 
   const [projects, posts, products] = await Promise.all([
     c
       .from("projects")
       .select(PROJECT_COLUMNS)
       .eq("status", "published")
-      .or(`title.ilike.${term},description.ilike.${term},technology.ilike.${term}`)
+      .or(`title.ilike.${pattern},description.ilike.${pattern}`)
       .order("sort_order", { ascending: true })
       .limit(6),
     c
       .from("posts")
       .select("id, title, created_at")
       .eq("status", "published")
-      .or(`title.ilike.${term},content.ilike.${term}`)
+      .or(`title.ilike.${pattern},content.ilike.${pattern}`)
       .order("created_at", { ascending: false })
       .limit(6),
     c
       .from("products")
       .select("id, name, slug, price")
       .eq("status", "active")
-      .or(`name.ilike.${term},description.ilike.${term}`)
+      .or(`name.ilike.${pattern},description.ilike.${pattern}`)
       .order("created_at", { ascending: false })
       .limit(6),
   ]);

@@ -106,9 +106,9 @@ export async function toggleLike(
   }
 
   const { count } = await auth.supabase
-    .from("posts")
+    .from("post_likes")
     .select("id", { count: "exact", head: true })
-    .eq("id", postId);
+    .eq("post_id", postId);
   return { ok: true, liked: !existing, likes: count ?? 0 };
 }
 
