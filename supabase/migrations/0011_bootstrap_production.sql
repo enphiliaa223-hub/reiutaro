@@ -31,6 +31,32 @@ on conflict (id) do update set
   allowed_mime_types = excluded.allowed_mime_types;
 
 -- ============================================================================
+-- 1b. HELPER ROLE (harus dibuat SEBELUM policy storage yang menggunakannya)
+-- ============================================================================
+create or replace function app.is_seller()
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role = 'seller' and status = 'active'
+  );
+$$;
+
+create or replace function app.is_staff()
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select app.is_admin() or app.is_seller();
+$$;
+
+-- ============================================================================
 -- 2. STORAGE RLS POLICIES (storage.objects) — wajib agar upload tidak ditolak
 -- ============================================================================
 
@@ -94,29 +120,6 @@ alter table public.profiles drop constraint if exists profiles_role_check;
 alter table public.profiles
   add constraint profiles_role_check
   check (role in ('user','moderator','seller','admin'));
-
-create or replace function app.is_seller()
-returns boolean
-language sql
-security definer
-set search_path = public
-stable
-as $$
-  select exists (
-    select 1 from public.profiles
-    where id = auth.uid() and role = 'seller' and status = 'active'
-  );
-$$;
-
-create or replace function app.is_staff()
-returns boolean
-language sql
-security definer
-set search_path = public
-stable
-as $$
-  select app.is_admin() or app.is_seller();
-$$;
 
 drop policy if exists "products_admin_all" on public.products;
 create policy "products_admin_all" on public.products
