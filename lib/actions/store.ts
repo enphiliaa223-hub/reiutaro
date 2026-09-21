@@ -134,6 +134,9 @@ export async function checkout(input: unknown): Promise<ActionResult> {
     if (message.startsWith("E_STOCK")) return { ok: false, error: "Stok produk tidak mencukupi." };
     if (message.startsWith("E_CART_EMPTY")) return { ok: false, error: "Cart kosong." };
     if (message.startsWith("E_NOT_AUTHENTICATED")) return { ok: false, error: "Login dulu." };
+    if (String(error.code).startsWith("PGRST202") || message.includes("Could not find the function")) {
+      return { ok: false, error: "Checkout belum siap: jalankan migrasi 0011 di Supabase SQL Editor." };
+    }
     return { ok: false, error: "Checkout gagal. Coba lagi." };
   }
 
